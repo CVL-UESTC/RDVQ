@@ -27,7 +27,7 @@ Extensive experiments demonstrate that RDVQ achieves strong performance at extre
 ## 🌿 Code will comming soon
 
 ## ⭐ Contact
-If you have any questions about ECVC, please contact Shiyin Jiang (shiyin.jsy@gmail.com)
+If you have any questions about RDVQ, please contact Shiyin Jiang (shiyin.jsy@gmail.com)
 
 ## BibTeX
 ```bibtex
