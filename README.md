@@ -24,8 +24,8 @@ Extensive experiments demonstrate that RDVQ achieves strong performance at extre
 <p>
 
 
-## 🌿 Code will comming soon
-
+## 🌿 Code will come soon
+  
 ## ⭐ Contact
 If you have any questions about RDVQ, please contact Shiyin Jiang (shiyin.jsy@gmail.com)
 
