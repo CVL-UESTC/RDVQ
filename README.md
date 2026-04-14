@@ -1,4 +1,4 @@
-## Differentiable Vector Quantization for Rate-Distortion Optimization of Generative Image Compression (CVPR 2026)
+## Differentiable Vector Quantization for Rate-Distortion Optimization of Generative Image Compression (CVPR 2026 Oral)
 
 
 <div align="center">
