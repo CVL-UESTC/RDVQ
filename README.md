@@ -5,7 +5,8 @@
 
 [Shiyin Jiang](https://scholar.google.com/citations?user=yf748WAAAAAJ&hl=en), [Wei Long](https://scholar.google.com/citations?user=CsVTBJoAAAAJ&hl=en), Minghao Han, [Zhenghao Chen](https://scholar.google.com/citations?user=BThVCu8AAAAJ&hl=en), [Ce Zhu](http://scholar.google.com/citations?hl=en&user=C7iZbYMAAAAJ), [Shuhang Gu](https://scholar.google.com/citations?user=-kSTt40AAAAJ&hl=en)
 
-[![arXiv](https://img.shields.io/badge/arXiv%20paper-2406.06525-b31b1b.svg)](xxxx)&nbsp;
+[![arXiv](https://img.shields.io/badge/arxiv-2604.10546-orange
+)](https://arxiv.org/abs/2604.10546)&nbsp;
 
 <img src="assets/framework.jpg" width="80%">
 
@@ -31,5 +32,13 @@ If you have any questions about RDVQ, please contact Shiyin Jiang (shiyin.jsy@gm
 
 ## BibTeX
 ```bibtex
-
+@misc{RDVQ,
+      title={Differentiable Vector Quantization for Rate-Distortion Optimization of Generative Image Compression}, 
+      author={Shiyin Jiang and Wei Long and Minghao Han and Zhenghao Chen and Ce Zhu and Shuhang Gu},
+      year={2026},
+      eprint={2604.10546},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2604.10546}, 
+}
 ```
