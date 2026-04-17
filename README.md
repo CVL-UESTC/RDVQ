@@ -32,13 +32,10 @@ If you have any questions about RDVQ, please contact Shiyin Jiang (shiyin.jsy@gm
 
 ## BibTeX
 ```bibtex
-@misc{RDVQ,
-      title={Differentiable Vector Quantization for Rate-Distortion Optimization of Generative Image Compression}, 
-      author={Shiyin Jiang and Wei Long and Minghao Han and Zhenghao Chen and Ce Zhu and Shuhang Gu},
-      year={2026},
-      eprint={2604.10546},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2604.10546}, 
+@article{jiang2026RDVQ,
+  title={Differentiable Vector Quantization for Rate-Distortion Optimization of Generative Image Compression},
+  author={Jiang, Shiyin and Long, Wei and Han, Minghao and Chen, Zhenghao and Zhu, Ce and Gu, Shuhang},
+  journal={arXiv preprint arXiv:2604.10546},
+  year={2026}
 }
 ```
