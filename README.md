@@ -8,7 +8,7 @@
 [![arXiv](https://img.shields.io/badge/arxiv-2604.10546-orange
 )](https://arxiv.org/abs/2604.10546)&nbsp;
 
-<img src="assets/framework.jpg" width="80%">
+<img src="assets/framework.pdf" width="80%">
 
 </div>
 
