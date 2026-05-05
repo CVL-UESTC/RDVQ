@@ -20,6 +20,7 @@ Extensive experiments demonstrate that RDVQ achieves strong performance at extre
 ## 🚀 Performance
 
 <p align="center">
+  <img src="assets/performance.png" width=60%>
 <img src="assets/visual.jpg" width=95%>
 <img src="assets/RD_curves.jpg" width=95%>
 <p>
