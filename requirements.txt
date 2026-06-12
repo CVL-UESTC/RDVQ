@@ -1,0 +1,24 @@
+# Core
+torch>=2.1.0
+torchvision
+numpy
+Pillow
+tqdm
+einops
+ninja                # JIT compile of C++ rANS extension
+setuptools>=60,<73   # pkg_resources for clip (CGIC uses 72.1.0)
+
+# Inference metrics
+clean-fid
+pyiqa
+pytorch_msssim
+torchmetrics
+
+# Real bitstream entropy coding
+compressai
+
+# Training (optional — only needed with --adam-8bit)
+bitsandbytes
+
+# Optional
+fvcore      # FLOP counting in AR generate (only with return_flops=True)
