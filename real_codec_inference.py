@@ -13,8 +13,8 @@ from cleanfid import fid
 import torchvision.transforms as T
 from tqdm import tqdm
 
-from tokenizer.tokenizer_image.compression.real.latents import encode_pixels_to_latents, restore_indices_to_multiscale_features
-from tokenizer.tokenizer_image.compression.real.simple_codec import SimpleRealCodec, SimpleRealCodecConfig
+from tokenizer.tokenizer_image.codec.latent_io import encode_pixels_to_latents, restore_indices_to_multiscale_features
+from tokenizer.tokenizer_image.codec.real import SimpleRealCodec, SimpleRealCodecConfig
 from evaluations.utils.evaluator import ImagePatcher, crop, packed_metrics, pad
 from evaluations.utils.img_divider import split_image
 from utils.bitstream_container import collect_bin_streams, save_image_bitstream_bin

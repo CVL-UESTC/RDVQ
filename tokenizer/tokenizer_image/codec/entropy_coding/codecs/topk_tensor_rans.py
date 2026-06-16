@@ -37,11 +37,11 @@ from dataclasses import dataclass
 
 import torch
 
-from tokenizer.tokenizer_image.entropy.streams.packet import TensorEntropyPayload
-from tokenizer.tokenizer_image.entropy.symbols.probability import logits_to_pmf, quantize_pmf_to_cdf
-from tokenizer.tokenizer_image.entropy.utils.profiling import _profile_add, _profile_tic, _profile_toc
-from tokenizer.tokenizer_image.entropy.symbols.symbol_mapping import build_topk_escape_coding
-from tokenizer.tokenizer_image.entropy.native.tensor_rans import IndexedRansDecoder, encode_indexed
+from tokenizer.tokenizer_image.codec.entropy_coding.packet import TensorEntropyPayload
+from tokenizer.tokenizer_image.codec.entropy_coding.probability import logits_to_pmf, quantize_pmf_to_cdf
+from tokenizer.tokenizer_image.codec.entropy_coding.profiling import _profile_add, _profile_tic, _profile_toc
+from tokenizer.tokenizer_image.codec.entropy_coding.symbol_mapping import build_topk_escape_coding
+from tokenizer.tokenizer_image.codec.entropy_coding.native.tensor_rans import IndexedRansDecoder, encode_indexed
 
 
 @dataclass(frozen=True)

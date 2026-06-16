@@ -17,8 +17,8 @@ import torch
 import torch.nn.functional as F
 from compressai.ans import BufferedRansEncoder, RansDecoder
 
-from tokenizer.tokenizer_image.entropy.native.fast_cdf import batch_pmf_to_quantized_cdf, cdf_to_compressai_lists
-from tokenizer.tokenizer_image.entropy.native.tensor_rans import decode_indexed, encode_indexed
+from tokenizer.tokenizer_image.codec.entropy_coding.native.fast_cdf import batch_pmf_to_quantized_cdf, cdf_to_compressai_lists
+from tokenizer.tokenizer_image.codec.entropy_coding.native.tensor_rans import decode_indexed, encode_indexed
 
 
 def _check_cdf(cdf: torch.Tensor, precision: int) -> None:

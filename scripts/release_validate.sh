@@ -18,40 +18,27 @@ PY_FILES=(
   tokenizer/tokenizer_image/models/quantizer.py
   tokenizer/tokenizer_image/models/vq_model.py
 
-  tokenizer/tokenizer_image/entropy/__init__.py
-  tokenizer/tokenizer_image/entropy/models/__init__.py
-  tokenizer/tokenizer_image/entropy/models/ar_predictor.py
-  tokenizer/tokenizer_image/entropy/models/legacy_model.py
-  tokenizer/tokenizer_image/entropy/streams/__init__.py
-  tokenizer/tokenizer_image/entropy/streams/coding.py
-  tokenizer/tokenizer_image/entropy/streams/packet.py
-  tokenizer/tokenizer_image/entropy/symbols/__init__.py
-  tokenizer/tokenizer_image/entropy/symbols/probability.py
-  tokenizer/tokenizer_image/entropy/symbols/specs.py
-  tokenizer/tokenizer_image/entropy/symbols/symbol_mapping.py
-  tokenizer/tokenizer_image/entropy/utils/__init__.py
-  tokenizer/tokenizer_image/entropy/utils/profiling.py
-  tokenizer/tokenizer_image/entropy/native/__init__.py
-  tokenizer/tokenizer_image/entropy/native/fast_cdf.py
-  tokenizer/tokenizer_image/entropy/native/tensor_rans.py
-  tokenizer/tokenizer_image/entropy/codecs/__init__.py
-  tokenizer/tokenizer_image/entropy/codecs/base.py
-  tokenizer/tokenizer_image/entropy/codecs/compressai_codec.py
-  tokenizer/tokenizer_image/entropy/codecs/tensor_rans_codec.py
-  tokenizer/tokenizer_image/entropy/codecs/topk_tensor_rans.py
-  tokenizer/tokenizer_image/entropy/pipelines/__init__.py
-  tokenizer/tokenizer_image/entropy/pipelines/causal_ar_loop.py
-  tokenizer/tokenizer_image/entropy/pipelines/causal_tensor.py
+  tokenizer/tokenizer_image/models/ar_predictor.py
+  tokenizer/tokenizer_image/models/compression_model.py
 
-  tokenizer/tokenizer_image/compression/__init__.py
-  tokenizer/tokenizer_image/compression/real/__init__.py
-  tokenizer/tokenizer_image/compression/real/latents.py
-  tokenizer/tokenizer_image/compression/real/legacy_pipeline.py
-  tokenizer/tokenizer_image/compression/real/profiling.py
-  tokenizer/tokenizer_image/compression/real/sampling.py
-  tokenizer/tokenizer_image/compression/real/simple_codec.py
-  tokenizer/tokenizer_image/compression/real/streaming.py
-  tokenizer/tokenizer_image/compression/real/validation.py
+  tokenizer/tokenizer_image/codec/__init__.py
+  tokenizer/tokenizer_image/codec/latent_io.py
+  tokenizer/tokenizer_image/codec/real/__init__.py
+  tokenizer/tokenizer_image/codec/real/causal_ar_loop.py
+  tokenizer/tokenizer_image/codec/real/causal_pipeline.py
+  tokenizer/tokenizer_image/codec/real/sampling.py
+  tokenizer/tokenizer_image/codec/real/simple.py
+  tokenizer/tokenizer_image/codec/entropy_coding/__init__.py
+  tokenizer/tokenizer_image/codec/entropy_coding/packet.py
+  tokenizer/tokenizer_image/codec/entropy_coding/probability.py
+  tokenizer/tokenizer_image/codec/entropy_coding/profiling.py
+  tokenizer/tokenizer_image/codec/entropy_coding/specs.py
+  tokenizer/tokenizer_image/codec/entropy_coding/symbol_mapping.py
+  tokenizer/tokenizer_image/codec/entropy_coding/native/__init__.py
+  tokenizer/tokenizer_image/codec/entropy_coding/native/fast_cdf.py
+  tokenizer/tokenizer_image/codec/entropy_coding/native/tensor_rans.py
+  tokenizer/tokenizer_image/codec/entropy_coding/codecs/__init__.py
+  tokenizer/tokenizer_image/codec/entropy_coding/codecs/topk_tensor_rans.py
 
   tokenizer/tokenizer_image/training/__init__.py
   tokenizer/tokenizer_image/training/build.py
@@ -68,7 +55,6 @@ PY_FILES=(
   tokenizer/tokenizer_image/training/optim/muon.py
   tokenizer/tokenizer_image/training/optim/scheduler.py
 
-  autoregressive/models/generate_single_stage_real.py
   autoregressive/models/mask_generation.py
   autoregressive/models/gpt.py
   dataset/build.py
@@ -113,10 +99,9 @@ PY
 if [[ "${RUN_IMPORT_CHECK:-0}" == "1" ]]; then
   echo "[4/5] Import check"
   python3 - <<'PY'
-from tokenizer.tokenizer_image.entropy import VQ_AR_Predictor, encode_entropy_packets
+from tokenizer.tokenizer_image.models.ar_predictor import VQ_AR_Predictor
 from tokenizer.tokenizer_image.models.vq_model import VQ_models
-from tokenizer.tokenizer_image.compression.real.simple_codec import SimpleRealCodec
-assert callable(encode_entropy_packets)
+from tokenizer.tokenizer_image.codec.real import SimpleRealCodec
 assert VQ_AR_Predictor is not None
 assert VQ_models
 assert SimpleRealCodec is not None

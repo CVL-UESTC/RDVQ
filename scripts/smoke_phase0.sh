@@ -5,34 +5,25 @@ ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "${ROOT_DIR}"
 
 PY_FILES=(
-  tokenizer/tokenizer_image/vq_model.py
-  tokenizer/tokenizer_image/quantize.py
-  tokenizer/tokenizer_image/entropy_model.py
-  tokenizer/tokenizer_image/entropy/__init__.py
-  tokenizer/tokenizer_image/entropy/ar_predictor.py
-  tokenizer/tokenizer_image/entropy/coding.py
-  tokenizer/tokenizer_image/entropy/packet.py
-  tokenizer/tokenizer_image/entropy/profiling.py
-  tokenizer/tokenizer_image/fast_entropy_cdf.py
-  tokenizer/tokenizer_image/training_utils.py
-  tokenizer/tokenizer_image/vq_train.py
-  tokenizer/tokenizer_image/vq_loss.py
-  tokenizer/tokenizer_image/gpt_mine.py
-  tokenizer/tokenizer_image/basic_vae.py
   forward_inference.py
   real_codec_inference.py
   utils/inference_common.py
   utils/bitstream_container.py
   utils/profile_accounting.py
+  utils/real_codec_stats.py
+  tokenizer/tokenizer_image/models/ar_predictor.py
+  tokenizer/tokenizer_image/models/compression_model.py
+  tokenizer/tokenizer_image/models/vq_model.py
+  tokenizer/tokenizer_image/models/quantizer.py
+  tokenizer/tokenizer_image/codec/latent_io.py
+  tokenizer/tokenizer_image/codec/real/simple.py
+  tokenizer/tokenizer_image/codec/real/causal_pipeline.py
+  tokenizer/tokenizer_image/codec/real/causal_ar_loop.py
+  tokenizer/tokenizer_image/codec/entropy_coding/codecs/topk_tensor_rans.py
+  tokenizer/tokenizer_image/codec/entropy_coding/native/tensor_rans.py
   dataset/build.py
   dataset/openimage.py
   evaluations/utils/evaluator.py
-  autoregressive/models/generate_single_stage_real.py
-  autoregressive/models/real_generation/__init__.py
-  autoregressive/models/real_generation/profiling.py
-  autoregressive/models/real_generation/sampling.py
-  autoregressive/models/real_generation/streaming.py
-  autoregressive/models/real_generation/validation.py
   autoregressive/models/mask_generation.py
   autoregressive/models/gpt.py
 )

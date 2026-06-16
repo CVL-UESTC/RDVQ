@@ -1,7 +1,7 @@
 """VQ_AR_Predictor — the active RDVQ autoregressive entropy model.
 
 This is the multi-scale masked-Transformer predictor that estimates
-conditional entropy during training and drives real entropy coding at
+conditional entropy during training and provides AR logits to the real codec at
 inference time.
 """
 
@@ -20,8 +20,12 @@ from autoregressive.models.mask_generation import (
 )
 from tokenizer.tokenizer_image.models.ar_transformer import MS_input_transformer
 
-from ..models.legacy_model import CompressionModel
-from ..utils.profiling import _profile_add, _profile_tic, _profile_toc
+from tokenizer.tokenizer_image.models.compression_model import CompressionModel
+from utils.profile_accounting import (
+    profile_add as _profile_add,
+    profile_tic as _profile_tic,
+    profile_toc as _profile_toc,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -57,11 +61,10 @@ class VQ_AR_Predictor(CompressionModel):
         self.mask_all = mask_all_training
 
     def entropy_code_ans(self, logits: torch.Tensor, ind: torch.Tensor, coding_mask=None, fill_value=0, profile=None, packet_position=None):
-        """Unified real entropy coder used by autoregressive inference.
+        """Removed legacy fast/debug entropy coder.
 
-        The backend is selected at runtime: the default path keeps the historical
-        CompressAI rANS implementation, while ``RDVQ_RANS_BACKEND=tensor`` uses
-        the tensor-native rANS extension for top-k/escape stream-merge coding.
+        Real bitstream coding now lives behind ``SimpleRealCodec`` so the model
+        module does not depend on rANS internals.
         """
         return self._entropy_code_real_ans(
             logits,
@@ -73,11 +76,7 @@ class VQ_AR_Predictor(CompressionModel):
         )
 
     def encoding_decoding_compressai(self, logits: torch.Tensor, ind: torch.Tensor, coding_mask=None, fill_value=0, profile=None, packet_position=None):
-        """Backward-compatible alias for older callers.
-
-        Kept so external scripts that still import the old CompressAI-named entry
-        continue to work; new code should call ``entropy_code_ans``.
-        """
+        """Removed legacy CompressAI-named fast/debug entropy coder."""
         return self._entropy_code_real_ans(
             logits,
             ind,

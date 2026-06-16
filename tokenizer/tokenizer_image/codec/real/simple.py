@@ -7,8 +7,8 @@ from typing import Any
 
 import torch
 
-from tokenizer.tokenizer_image.compression.real.latents import EncodedLatents
-from tokenizer.tokenizer_image.entropy.pipelines import causal_tensor_compress_and_decompress
+from tokenizer.tokenizer_image.codec.latent_io import EncodedLatents
+from tokenizer.tokenizer_image.codec.real.causal_pipeline import causal_tensor_compress_and_decompress
 
 
 @dataclass(frozen=True)

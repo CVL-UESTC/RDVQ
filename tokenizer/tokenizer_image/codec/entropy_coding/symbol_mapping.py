@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import torch
 
-from ..streams.packet import TensorEntropyPayload
-from ..symbols.probability import cdf_to_lists_profiled, quantize_pmf_to_cdf
-from ..utils.profiling import _profile_add, _profile_tic, _profile_toc
+from .packet import TensorEntropyPayload
+from .probability import cdf_to_lists_profiled, quantize_pmf_to_cdf
+from .profiling import _profile_add, _profile_tic, _profile_toc
 from .specs import TopKEscapeCoding
 
 

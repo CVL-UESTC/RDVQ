@@ -6,12 +6,12 @@ import torch
 import torch.nn.functional as F
 from compressai._CXX import pmf_to_quantized_cdf as _pmf_to_quantized_cdf
 
-from tokenizer.tokenizer_image.entropy.native.fast_cdf import (
+from tokenizer.tokenizer_image.codec.entropy_coding.native.fast_cdf import (
     batch_pmf_to_quantized_cdf,
     cdf_to_compressai_lists,
 )
 
-from ..utils.profiling import _profile_add, _profile_tic, _profile_toc
+from .profiling import _profile_add, _profile_tic, _profile_toc
 from .specs import DeterministicSelection
 
 

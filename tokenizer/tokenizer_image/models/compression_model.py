@@ -1,35 +1,17 @@
-"""Legacy CompressionModel base class and historical entropy coding helpers.
+"""CompressionModel base class and historical neural entropy helpers.
 
-Contains the CompressionModel nn.Module (Gaussian mixture / slice-prediction
-entropy model plus the ``_entropy_code_real_ans`` real-coding entry) and the
-standalone RMSNorm.  VQ_AR_Predictor inherits from CompressionModel.
+This module contains model-side Gaussian mixture / slice-prediction utilities
+and the standalone RMSNorm. Actual real bitstream coding lives under
+``tokenizer.tokenizer_image.codec``.
 """
 
 import logging
 import math
-import os
-import warnings
-from functools import partial
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import repeat
-
-from compressai.ans import BufferedRansEncoder, RansDecoder
-from compressai._CXX import pmf_to_quantized_cdf as _pmf_to_quantized_cdf
-
-from ..streams.packet import EntropyPacket
-from ..symbols.probability import (
-    apply_deterministic_selection,
-    build_full_cdf_lists,
-    build_scalar_cdf_lists,
-    logits_to_pmf,
-    validate_symbol_range,
-)
-from ..utils.profiling import _env_flag, _profile_add, _profile_tic, _profile_toc
-from ..symbols.symbol_mapping import build_topk_escape_coding, decode_topk_escape_symbol_list
-
 
 logger = logging.getLogger(__name__)
 
@@ -598,235 +580,16 @@ class CompressionModel(nn.Module):
             soft_idx = (soft_idx_x, soft_idx_y)
         return [means_final, scales_final, weights], [y_q_restored, emb_loss_res, info_res, soft_idx, cons_loss, JsKl_loss]
 
-    # put this near top of your file
     @torch.no_grad()
-    def _entropy_code_real_ans(self, logits: torch.Tensor, ind: torch.Tensor, coding_mask=None, fill_value=0, profile=None, packet_position=None):
-        """Entropy coding with optional deterministic and top-k/escape paths.
+    def _entropy_code_real_ans(self, *args, **kwargs):
+        """Removed legacy fast/debug entropy path.
 
-        Deterministic mode removes positions that the decoder can recover from
-        the current logits alone.  It is only applied when every high-confidence
-        position in the current step matches argmax; otherwise the step falls
-        back to ordinary entropy coding so exceptions are never hidden.
+        Actual real bitstream coding is implemented by
+        ``tokenizer.tokenizer_image.codec.real.SimpleRealCodec`` so model files
+        do not depend on rANS or stream-merge internals.
         """
-        total_start = _profile_tic(profile, logits)
 
-        pmf = logits_to_pmf(logits, profile=profile)
-
-        t = _profile_tic(profile, ind)
-        assert pmf.dtype == torch.float32
-        device = ind.device
-        dtype = ind.dtype
-        B, N = ind.shape
-        _, _, K = pmf.shape
-        validate_symbol_range(ind, K)
-        sym = ind.to(torch.int32)
-        if coding_mask is None:
-            coding_mask = torch.ones((B, N), dtype=torch.bool, device=device)
-        else:
-            coding_mask = coding_mask.to(device=device, dtype=torch.bool)
-            assert coding_mask.shape == (B, N)
-        rec_sym = torch.full_like(ind, int(fill_value), dtype=dtype, device=device)
-        _profile_toc(profile, "entropy.prepare_mask", t, ind)
-
-        transmitted = int(coding_mask.sum().item())
-        _profile_add(profile, "entropy.symbols", transmitted)
-        _profile_add(profile, "entropy.calls", 1)
-        if transmitted == 0:
-            _profile_toc(profile, "entropy.total", total_start, logits)
-            return b"", rec_sym
-
-        # Runtime knobs: keep the old full-CDF path available only when explicitly requested.
-        precision = 16
-        allow_scalar_fallback = _env_flag("RDVQ_ALLOW_SCALAR_FALLBACK", False)
-        use_fast_cdf = os.environ.get("RDVQ_FAST_CDF", "1").strip().lower() not in {"0", "false", "no", "off"}
-        entropy_coder = os.environ.get("RDVQ_ENTROPY_CODER", "full").strip().lower()
-        topk = int(os.environ.get("RDVQ_TOPK", "64"))
-        use_topk_escape = entropy_coder in {"topk", "topk_escape"} and use_fast_cdf and 0 < topk < K
-        use_tensor_rans = (
-            use_topk_escape
-            and _env_flag("RDVQ_STREAM_MERGE", False)
-            and os.environ.get("RDVQ_RANS_BACKEND", "compressai").strip().lower() == "tensor"
+        raise NotImplementedError(
+            "The legacy model.entropy_code_ans fast/debug path was removed. "
+            "Use tokenizer.tokenizer_image.codec.real.SimpleRealCodec for real bitstream coding."
         )
-        deterministic_threshold = float(os.environ.get("RDVQ_DETERMINISTIC_THRESHOLD", "0") or 0)
-        use_deterministic = _env_flag("RDVQ_DETERMINISTIC", True) and deterministic_threshold > 0
-
-        # Flatten only the actually transmitted positions; padded latent tokens stay invisible.
-        t = _profile_tic(profile, logits)
-        sym_selected_all = sym[coding_mask].reshape(-1).to(device=device, dtype=torch.long)
-        pmf_selected_all = pmf[coding_mask].reshape(-1, K).contiguous()
-        _profile_toc(profile, "entropy.select_valid", t, logits)
-
-        total_valid = sym_selected_all.numel()
-        code_selected_mask = torch.ones(total_valid, dtype=torch.bool, device=device)
-        rec_selected = torch.empty(total_valid, dtype=dtype, device=device)
-
-        if use_deterministic:
-            selection = apply_deterministic_selection(
-                pmf_selected_all,
-                sym_selected_all,
-                rec_selected,
-                code_selected_mask,
-                deterministic_threshold,
-                dtype,
-                profile=profile,
-                device_ref=logits,
-            )
-            rec_selected = selection.rec_selected
-            code_selected_mask = selection.code_selected_mask
-            if selection.zero_stream:
-                rec_sym[coding_mask] = rec_selected
-                _profile_toc(profile, "entropy.total", total_start, logits)
-                return b"", rec_sym
-
-        sym_code = sym_selected_all[code_selected_mask]
-        pmf_selected = pmf_selected_all[code_selected_mask]
-        sym_cpu = None
-        sym_list = None
-        idx_list = None
-        cdf_list = None
-        cdf_len_list = None
-        offset_list = None
-        restore_topk = None
-        tensor_payload = None
-        fast_error = None
-
-        try:
-            if use_topk_escape:
-                topk_coding = build_topk_escape_coding(
-                    pmf_selected,
-                    sym_code,
-                    topk,
-                    precision,
-                    use_tensor_rans=use_tensor_rans,
-                    profile=profile,
-                    device_ref=logits,
-                )
-                sym_cpu = topk_coding.sym_cpu
-                sym_list = topk_coding.sym_list
-                idx_list = topk_coding.idx_list
-                cdf_list = topk_coding.cdf_list
-                cdf_len_list = topk_coding.cdf_len_list
-                offset_list = topk_coding.offset_list
-                tensor_payload = topk_coding.tensor_payload
-                restore_topk = topk_coding.restore_topk
-            elif use_fast_cdf:
-                # Full alphabet, but CDF construction is batched and chunked for memory safety.
-                t = _profile_tic(profile, logits)
-                sym_cpu = sym_code.to(torch.int32).cpu()
-                _profile_toc(profile, "entropy.gpu_to_cpu", t, logits)
-
-                chunk_rows = int(os.environ.get("RDVQ_FAST_CDF_CHUNK_ROWS", "2048"))
-                cdf_list, cdf_len_list = build_full_cdf_lists(
-                    pmf_selected,
-                    precision,
-                    chunk_rows,
-                    profile=profile,
-                    device_ref=logits,
-                )
-                _profile_add(profile, "entropy.fast_cdf_calls", 1)
-            else:
-                raise RuntimeError("fast CDF disabled")
-        except Exception as exc:  # pragma: no cover - safety boundary for uncommon PMF edge cases.
-            fast_error = exc
-            _profile_add(profile, "entropy.fast_cdf_fallbacks", 1)
-            if _env_flag("RDVQ_FAST_CDF_STRICT", False) or not allow_scalar_fallback:
-                raise RuntimeError(
-                    "fast entropy path failed and scalar full-CDF fallback is disabled; "
-                    "set RDVQ_ALLOW_SCALAR_FALLBACK=1 only for legacy debugging"
-                ) from exc
-            warnings.warn(
-                f"fast entropy path failed ({exc}); falling back to CompressAI scalar full CDF",
-                RuntimeWarning,
-                stacklevel=2,
-            )
-            use_fast_cdf = False
-            use_topk_escape = False
-            restore_topk = None
-
-        if not use_fast_cdf:
-            # Debug fallback: exact legacy CompressAI scalar CDF path.
-            t = _profile_tic(profile, logits)
-            sym_cpu = sym_code.to(torch.int32).cpu()
-            pmf_cpu = pmf_selected.cpu()
-            _profile_toc(profile, "entropy.gpu_to_cpu", t, logits)
-
-            cdf_list, cdf_len_list = build_scalar_cdf_lists(pmf_cpu, precision, profile=profile)
-            if fast_error is None:
-                _profile_add(profile, "entropy.scalar_cdf_calls", 1)
-            else:
-                _profile_add(profile, "entropy.scalar_cdf_fallbacks", 1)
-
-        if sym_list is None and tensor_payload is None:
-            total_elements = sym_cpu.numel()
-            t = _profile_tic(profile)
-            sym_list = sym_cpu.tolist()
-            idx_list = list(range(total_elements))
-            offset_list = [0] * total_elements
-            elapsed = _profile_toc(profile, "entropy.rans_list_prepare", t)
-            _profile_add(profile, "entropy.cdf_build_and_lists", elapsed)
-
-        if _env_flag("RDVQ_STREAM_MERGE", False):
-            # Defer rANS flush to image level. rec_sym uses the known lossless target here;
-            # the merged stream is decoded and checked after all causal packets are collected.
-            rec_selected[code_selected_mask] = sym_code.to(dtype)
-            rec_sym[coding_mask] = rec_selected
-            packet_metadata = {
-                "decoded_template": rec_sym.detach().cpu().contiguous(),
-                "coding_mask": coding_mask.detach().cpu().contiguous(),
-                "code_selected_mask": code_selected_mask.detach().cpu().contiguous(),
-                "slice_idx": packet_position,
-            }
-            if restore_topk is not None:
-                packet_metadata["restore_topk"] = {
-                    "topk": int(restore_topk["topk"]),
-                    "top_indices": restore_topk["top_indices"].to(torch.int32).cpu().contiguous(),
-                    "residual_non_top_indices": None
-                    if restore_topk["residual_non_top_indices"] is None
-                    else restore_topk["residual_non_top_indices"].to(torch.int32).cpu().contiguous(),
-                    "total_elements": int(restore_topk["total_elements"]),
-                }
-            if tensor_payload is not None:
-                packet = EntropyPacket(tensor_payload=tensor_payload, coding_backend="tensor", **packet_metadata)
-                packet_symbols = int(tensor_payload.top_symbols.numel() + tensor_payload.residual_symbols.numel())
-            else:
-                packet = EntropyPacket(sym_list, idx_list, cdf_list, cdf_len_list, offset_list, **packet_metadata)
-                packet_symbols = len(sym_list)
-            _profile_add(profile, "entropy.deferred_packets", 1)
-            _profile_add(profile, "entropy.deferred_packet_symbols", packet_symbols)
-            _profile_toc(profile, "entropy.total", total_start, logits)
-            return packet, rec_sym
-
-        t = _profile_tic(profile)
-        encoder = BufferedRansEncoder()
-        decoder = RansDecoder()
-        _profile_toc(profile, "entropy.init_codec", t)
-
-        t = _profile_tic(profile)
-        encoder.encode_with_indexes(sym_list, idx_list, cdf_list, cdf_len_list, offset_list)
-        _profile_toc(profile, "entropy.rans_encode", t)
-
-        t = _profile_tic(profile)
-        byte_stream = encoder.flush()
-        _profile_toc(profile, "entropy.rans_flush", t)
-        _profile_add(profile, "entropy.payload_bits", len(byte_stream) * 8)
-
-        t = _profile_tic(profile)
-        decoder.set_stream(byte_stream)
-        dec_list = decoder.decode_stream(idx_list, cdf_list, cdf_len_list, offset_list)
-        _profile_toc(profile, "entropy.rans_decode", t)
-
-        t = _profile_tic(profile)
-        if restore_topk is None:
-            # Full-CDF path decodes directly to the original codebook indices.
-            assert sym_list == dec_list, "Decode mismatch!"
-            decoded_values = torch.tensor(dec_list, dtype=dtype, device=device)
-        else:
-            # Top-k/escape path maps decoded ranks back to codebook indices before scattering.
-            decoded_values = decode_topk_escape_symbol_list(dec_list, restore_topk, dtype=dtype, device=device)
-            assert sym_cpu.tolist() == decoded_values.to(torch.int32).cpu().tolist(), "Decode mismatch!"
-        rec_selected[code_selected_mask] = decoded_values
-        rec_sym[coding_mask] = rec_selected
-        _profile_toc(profile, "entropy.restore_tensor", t, device)
-
-        _profile_toc(profile, "entropy.total", total_start, logits)
-        return byte_stream, rec_sym

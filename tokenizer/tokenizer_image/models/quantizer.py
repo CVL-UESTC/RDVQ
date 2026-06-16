@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from math import sqrt, log
-from tokenizer.tokenizer_image.entropy import VQ_AR_Predictor
+from tokenizer.tokenizer_image.models.ar_predictor import VQ_AR_Predictor
 
 
 def compute_entropy_loss(affinity, loss_type="softmax", temperature=0.01, Cd_entropy_estnet=None, quant=None, training=False, updated_num_patches=None, get_cd_loss = False, mask_padded=None):

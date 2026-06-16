@@ -15,21 +15,20 @@ import time
 
 import torch
 
-from tokenizer.tokenizer_image.compression.real.sampling import sample
-from tokenizer.tokenizer_image.compression.real.streaming import _fill_invalid_tokens
-from tokenizer.tokenizer_image.entropy.codecs.topk_tensor_rans import (
+from tokenizer.tokenizer_image.codec.real.sampling import sample
+from tokenizer.tokenizer_image.codec.entropy_coding.codecs.topk_tensor_rans import (
     EncodedTopkTensorStreams,
     TopkTensorRansCodec,
     TopkTensorRansConfig,
 )
-from tokenizer.tokenizer_image.entropy.streams.packet import EncodedEntropyStream
-from tokenizer.tokenizer_image.entropy.pipelines.causal_ar_loop import (
+from tokenizer.tokenizer_image.codec.entropy_coding.packet import EncodedEntropyStream
+from tokenizer.tokenizer_image.codec.real.causal_ar_loop import (
     CausalARState,
     max_new_tokens,
     num_ar_slices,
     valid_token_mask_from_padding,
 )
-from tokenizer.tokenizer_image.entropy.utils.profiling import _profile_tic, _profile_toc
+from tokenizer.tokenizer_image.codec.entropy_coding.profiling import _profile_tic, _profile_toc
 
 
 
@@ -94,6 +93,13 @@ def _entropy_for_targets(model, logits, targets_current, valid_current, padding_
         entropy = entropy * valid_current.to(entropy.device, dtype=entropy.dtype)
     _profile_toc(profile, "causal.encoder_entropy_loss", t, logits)
     return float(entropy.sum().item())
+
+
+def _fill_invalid_tokens(tokens, valid_mask, padding_token):
+    if valid_mask is None:
+        return tokens
+    fill = torch.full_like(tokens, int(padding_token))
+    return torch.where(valid_mask.to(tokens.device), tokens, fill)
 
 
 def _sample_suffix_slice(logits, valid_current, padding_token, profile=None, **sampling_kwargs):

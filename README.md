@@ -6,8 +6,6 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2604.10546-orange?style=flat-square)](https://arxiv.org/abs/2604.10546)
 [![CVPR 2026](https://img.shields.io/badge/CVPR-2026-blue?style=flat-square)](https://cvpr.thecvf.com/)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square\&logo=python)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.1+-red?style=flat-square\&logo=pytorch)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/License-CC--BY--4.0-lightgrey?style=flat-square)](LICENSE)
 
 [Shiyin Jiang](https://scholar.google.com/citations?user=yf748WAAAAAJ&hl=en) ·
@@ -255,12 +253,11 @@ If you find RDVQ helpful for your research, please cite:
 
 ```bibtex
 @inproceedings{jiang2026rdvq,
-  title     = {Differentiable Vector Quantization for Rate-Distortion Optimization
-               of Generative Image Compression},
-  author    = {Jiang, Shiyin and Long, Wei and Han, Minghao and Chen, Zhenghao
-               and Zhu, Ce and Gu, Shuhang},
-  booktitle = {CVPR},
-  year      = {2026},
+  title={Differentiable Vector Quantization for Rate-Distortion Optimization of Generative Image Compression},
+  author={Jiang, Shiyin and Long, Wei and Han, Minghao and Chen, Zhenghao and Zhu, Ce and Gu, Shuhang},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={14440--14450},
+  year={2026}
 }
 ```
 
