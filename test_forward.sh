@@ -9,7 +9,7 @@ export NUMEXPR_NUM_THREADS=${NUMEXPR_NUM_THREADS:-8}
 
 # 1. Runtime selection: checkpoint, GPU, and one dataset.
 if [[ -z "${TEST_CKPT_PATH:-}" ]]; then
-    echo "❌ TEST_CKPT_PATH is required. Example: TEST_CKPT_PATH=/path/to/checkpoint bash test.sh" >&2
+    echo "❌ TEST_CKPT_PATH is required. Example: TEST_CKPT_PATH=/path/to/checkpoint bash test_forward.sh" >&2
     exit 1
 fi
 ckpt_path=${TEST_CKPT_PATH}
@@ -17,7 +17,7 @@ device=${TEST_DEVICE:-0}
 
 # Use TEST_IMAGE_DIR for the image folder. TEST_DATASET is only the evaluation label.
 # Example:
-#   TEST_IMAGE_DIR=/path/to/images TEST_DATASET=kodak bash test.sh
+#   TEST_IMAGE_DIR=/path/to/images TEST_DATASET=kodak bash test_forward.sh
 declare -A DATASET_FID_TESTS=(
     [div2k]="div2k"
     [clic]="clic"
@@ -83,7 +83,7 @@ print_log_summary() {
     echo "--------------------------------------------------"
 }
 
-# 2. Optional runtime arguments. Model/patch defaults live in my_inference.py.
+# 2. Optional runtime arguments. Model/patch defaults live in forward_inference.py.
 runtime_args=()
 if [[ -n "${TEST_MAX_IMAGES:-}" ]]; then
     runtime_args+=(--max-images "${TEST_MAX_IMAGES}")
@@ -116,7 +116,7 @@ echo "📄 Checkpoint: ${ckpt_path}"
 echo "===================================================================="
 
 log_path="inference_logs/log_${dataset_name}.txt"
-CUDA_VISIBLE_DEVICES=$device python my_inference.py \
+CUDA_VISIBLE_DEVICES=$device python forward_inference.py \
     -i "${image_dir}" \
     --fid_test "${fid_test}" \
     --dataset_name "${dataset_name}" \

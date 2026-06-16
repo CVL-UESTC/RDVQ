@@ -5,8 +5,8 @@ ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "${ROOT_DIR}"
 
 PY_FILES=(
-  my_inference.py
-  Real_Endecode_inference_single_stageAR.py
+  forward_inference.py
+  real_codec_inference.py
   utils/inference_common.py
   utils/bitstream_container.py
   utils/profile_accounting.py
@@ -77,9 +77,8 @@ PY_FILES=(
 )
 
 SH_FILES=(
-  train.sh
-  test.sh
-  test_Real.sh
+  test_forward.sh
+  test_real.sh
   scripts/smoke_phase0.sh
   scripts/tokenizer/train_vq.sh
 )
@@ -136,13 +135,13 @@ fi
 
 if [[ "${RUN_FORWARD_SMOKE:-0}" == "1" ]]; then
   echo "[optional] Forward one-image smoke"
-  TEST_MAX_IMAGES="${TEST_MAX_IMAGES:-1}" TEST_METRICS="${TEST_METRICS:-bpp,psnr,msssim}" bash test.sh
+  TEST_MAX_IMAGES="${TEST_MAX_IMAGES:-1}" TEST_METRICS="${TEST_METRICS:-bpp,psnr,msssim}" bash test_forward.sh
 fi
 
 if [[ "${RUN_REAL_SMOKE:-0}" == "1" ]]; then
   echo "[optional] Real one-image smoke"
   DISABLE_FID="${DISABLE_FID:-1}" SAVE_IMAGES="${SAVE_IMAGES:-0}" \
-  TEST_MAX_IMAGES="${TEST_MAX_IMAGES:-1}" TEST_METRICS="${TEST_METRICS:-bpp,psnr,msssim}" bash test_Real.sh
+  TEST_MAX_IMAGES="${TEST_MAX_IMAGES:-1}" TEST_METRICS="${TEST_METRICS:-bpp,psnr,msssim}" bash test_real.sh
 fi
 
 echo "Release validation checks completed."

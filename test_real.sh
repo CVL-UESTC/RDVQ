@@ -12,7 +12,7 @@ entropy_topk=${TEST_TOPK:-${TOPK:-1024}}
 
 # 1. Runtime selection: checkpoint, GPU, and one dataset.
 if [[ -z "${TEST_CKPT_PATH:-}" ]]; then
-  echo "❌ TEST_CKPT_PATH is required. Example: TEST_CKPT_PATH=/path/to/best.pt bash test_Real.sh" >&2
+  echo "❌ TEST_CKPT_PATH is required. Example: TEST_CKPT_PATH=/path/to/best.pt bash test_real.sh" >&2
   exit 1
 fi
 ckpt_path=${TEST_CKPT_PATH}
@@ -20,7 +20,7 @@ device=${TEST_DEVICE:-0}
 
 # Use TEST_IMAGE_DIR for the image folder. TEST_DATASET is only the evaluation label.
 # Example:
-#   TEST_IMAGE_DIR=/path/to/images TEST_DATASET=kodak bash test_Real.sh
+#   TEST_IMAGE_DIR=/path/to/images TEST_DATASET=kodak bash test_real.sh
 declare -A DATASET_FID_TESTS=(
   [div2k]="div2k"
   [clic]="clic"
@@ -106,7 +106,7 @@ echo "📄 Checkpoint: ${ckpt_path}"
 echo "🔢 Entropy topk: ${entropy_topk}"
 echo "===================================================================="
 
-CUDA_VISIBLE_DEVICES=$device python Real_Endecode_inference_single_stageAR.py \
+CUDA_VISIBLE_DEVICES=$device python real_codec_inference.py \
   -i "${image_dir}" \
   --fid_test "${fid_test}" \
   --dataset_name "${dataset_name}" \

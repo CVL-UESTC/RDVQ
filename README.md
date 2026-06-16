@@ -92,7 +92,7 @@ pip install "torch>=2.1.0" torchvision --index-url https://download.pytorch.org/
 pip install -r requirements.txt
 ```
 
-> **Note:** The default real-bitstream path uses the causal top-k tensor-rANS codec and JIT-builds a small C++17 extension on first use. Please make sure a C++17 compiler is available when running `test_Real.sh`.
+> **Note:** The default real-bitstream path uses the causal top-k tensor-rANS codec and JIT-builds a small C++17 extension on first use. Please make sure a C++17 compiler is available when running `test_real.sh`.
 
 ---
 
@@ -119,8 +119,8 @@ RDVQ provides two testing scripts:
 
 | Script         | Bitrate Type           | Description                                           |
 | -------------- | ---------------------- | ----------------------------------------------------- |
-| `test.sh`      | Estimated bitrate      | Reports entropy-estimated bitrate such as `cd_bpp`.   |
-| `test_Real.sh` | Real bitstream bitrate | Reports actual payload bitrate such as `cd_bpp_real`. |
+| `test_forward.sh`      | Estimated bitrate      | Reports entropy-estimated bitrate such as `cd_bpp`.   |
+| `test_real.sh` | Real bitstream bitrate | Reports actual payload bitrate such as `cd_bpp_real`. |
 
 By default, the evaluator reports:
 
@@ -136,7 +136,7 @@ You can override the metric list with `TEST_METRICS`.
 TEST_CKPT_PATH=/path/to/checkpoint \
 TEST_IMAGE_DIR=/path/to/kodak \
 TEST_DATASET=kodak \
-bash test.sh
+bash test_forward.sh
 ```
 
 ### Quick Start: Real-Bitstream Evaluation
@@ -145,7 +145,7 @@ bash test.sh
 TEST_CKPT_PATH=/path/to/checkpoint \
 TEST_IMAGE_DIR=/path/to/kodak \
 TEST_DATASET=kodak \
-bash test_Real.sh
+bash test_real.sh
 ```
 
 ### DIV2K / CLIC Evaluation with FID and KID
@@ -157,7 +157,7 @@ TEST_CKPT_PATH=/path/to/checkpoint \
 TEST_IMAGE_DIR=/path/to/DIV2K_valid_HR \
 TEST_DATASET=div2k \
 FID_REF_ROOT=/path/to/fid_refs \
-bash test.sh
+bash test_forward.sh
 ```
 
 For CLIC:
@@ -167,7 +167,7 @@ TEST_CKPT_PATH=/path/to/checkpoint \
 TEST_IMAGE_DIR=/path/to/CLIC_valid \
 TEST_DATASET=clic \
 FID_REF_ROOT=/path/to/fid_refs \
-bash test.sh
+bash test_forward.sh
 ```
 
 The evaluator uses:
@@ -180,14 +180,14 @@ If the reference directory is missing or empty, it will be generated automatical
 
 ### Test-Time Rate Control
 
-`test_Real.sh` supports test-time rate control through prefix transmission and autoregressive completion by changing `TEST_TRANSFER_SLICES`:
+`test_real.sh` supports test-time rate control through prefix transmission and autoregressive completion by changing `TEST_TRANSFER_SLICES`:
 
 ```bash
 TEST_CKPT_PATH=/path/to/checkpoint \
 TEST_IMAGE_DIR=/path/to/kodak \
 TEST_DATASET=kodak \
 TEST_TRANSFER_SLICES=4 \
-bash test_Real.sh
+bash test_real.sh
 ```
 
 
@@ -211,7 +211,7 @@ SAVE_IMAGES=0
 | `FID_REF_DIR`          | Optional       | Manually specified reference tile directory.                         |
 | `TEST_METRICS`         | Optional       | Evaluation metric list.                                              |
 | `TEST_TRANSFER_SLICES` | Optional       | Number of transmitted latent slices for real-bitstream rate control. |
-| `TEST_TOPK`            | Optional       | Top-k/escape entropy width for `test_Real.sh`. Default: `1024`.      |
+| `TEST_TOPK`            | Optional       | Top-k/escape entropy width for `test_real.sh`. Default: `1024`.      |
 | `TEST_MAX_IMAGES`      | Optional       | Maximum number of images for debugging.                              |
 | `DISABLE_FID`          | Optional       | Disable FID/KID computation.                                         |
 | `SAVE_IMAGES`          | Optional       | Whether to save reconstructed images.                                |

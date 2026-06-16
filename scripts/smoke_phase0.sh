@@ -19,8 +19,8 @@ PY_FILES=(
   tokenizer/tokenizer_image/vq_loss.py
   tokenizer/tokenizer_image/gpt_mine.py
   tokenizer/tokenizer_image/basic_vae.py
-  my_inference.py
-  Real_Endecode_inference_single_stageAR.py
+  forward_inference.py
+  real_codec_inference.py
   utils/inference_common.py
   utils/bitstream_container.py
   utils/profile_accounting.py
@@ -38,9 +38,8 @@ PY_FILES=(
 )
 
 SH_FILES=(
-  train.sh
-  test.sh
-  test_Real.sh
+  test_forward.sh
+  test_real.sh
   scripts/tokenizer/train_vq.sh
 )
 
@@ -69,7 +68,7 @@ if [[ "${RUN_FORWARD_SMOKE:-0}" == "1" ]]; then
     exit 1
   fi
   ln -s "${first_image}" "${smoke_dir}/$(basename "${first_image}")"
-  TEST_IMAGE_DIR="${smoke_dir}" TEST_MAX_IMAGES=1 TEST_METRICS="bpp,psnr,msssim" bash test.sh
+  TEST_IMAGE_DIR="${smoke_dir}" TEST_MAX_IMAGES=1 TEST_METRICS="bpp,psnr,msssim" bash test_forward.sh
 else
   echo "[3/3] Forward smoke skipped; set RUN_FORWARD_SMOKE=1 to enable it"
 fi
